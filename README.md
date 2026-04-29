@@ -5,6 +5,7 @@ A collection of the most important Cypress concepts, commands and patterns. Writ
 ## 📑 Table of contents
 
 - [Setup and running](#-setup-and-running)
+- [Page Objects](#-page-objects)
 - [Selectors](#-selectors)
 - [Lists of elements](#-lists-of-elements)
 - [Assertions (should / and / expect)](#-assertions-should--and--expect)
@@ -41,26 +42,69 @@ npx cypress run --browser chrome # specific browser
 
 ---
 
-## 🎯 Selectors
+## 🚀 Setup and running
 
-### `cy.get()` vs `cy.find()`
-
-```js
-cy.get('a').get('b')   // ❌ WRONG – `b` is searched from the document root
-cy.get('a').find('b')  // ✅ RIGHT – `b` is searched inside `a`
+```bash
+npm run init                    # init the project (if defined in scripts)
+npm install                     # install dependencies
+npm install cypress --save-dev  # Cypress itself
+npx cypress open                # interactive mode (GUI)
+npx cypress run                 # headless mode (CI)
+npx cypress run --browser chrome # specific browser
 ```
 
-**Rule:** `get` starts from the document, `find` goes deeper inside the previously found element.
+> 💡 In `open` mode you can see every step of the test and inspect the DOM at any moment. `run` is much faster — perfect for CI.
 
-### `data-cy` – the best practice
+---
 
-Instead of relying on CSS classes or IDs, add dedicated `data-cy` attributes in your components:
+## 📄 Page Objects
+The Page Object pattern wraps a single page (or a self-contained chunk of UI) into a class that exposes its elements and high-level actions. Tests stop caring about selectors and just say *what* they want to do.
+
+### Example page object
+
+`cypress/support/pages/sample.page.js`:
 
 ```js
-cy.get("[data-cy='contact-btn-submit']")
+class SamplePageObject {
+  elements = {
+    emailInput: () => cy.get('input'),
+    subscribeButton: () => cy.get('#subscribe'),
+  }
+
+  visit() {
+    cy.visit('/forms')
+  }
+
+  setEmail(email) {
+    this.elements.emailInput().type(email)
+  }
+
+  clickSubscribe() {
+    this.elements.subscribeButton().click()
+  }
+}
+
+export default new SamplePageObject()
 ```
 
-CSS classes change all the time (style refactors), `data-cy` lives only in tests and nobody will accidentally remove it.
+### Usage in a test
+
+```js
+/// <reference types="cypress" />
+import pageObject from '../support/pages/sample.page'
+
+describe('Overview tests', () => {
+  beforeEach('setUp', () => {
+  })
+
+  it('Page object test', () => {
+    pageObject.visit()
+    pageObject.setEmail('example@ex.com')
+  })
+})
+```
+
+> 🆚 **Page Object vs Custom Command:** Custom commands are great for cross-cutting actions (`cy.login()`, `cy.seedDb()`). Page objects shine when you want to model a specific screen with all its elements and behaviors in one place.
 
 ---
 
