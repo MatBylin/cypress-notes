@@ -1,4 +1,4 @@
-# 🌲 Cypress – cheatsheet / course notes
+# Cypress – cheatsheet
 
 A collection of the most important Cypress concepts, commands and patterns. Written in a "get-things-done" style — short, with examples, so I can quickly come back to a topic when I forget how something works.
 
